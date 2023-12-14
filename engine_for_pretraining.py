@@ -32,7 +32,7 @@ def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: to
     pool = 8
     nbins = 9
     cpb = 2
-    HogLayer = HOGLayerC(nbins=nbins, pool=pool, cell_per_blocks=cpb)
+    HogLayer = HOGLayerC(nbins=nbins, pool=pool, cell_per_blocks=cpb).to(device)
 
     for step, (batch, _) in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
         # assign learning rate & weight decay for each step
@@ -45,18 +45,15 @@ def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: to
                     param_group["weight_decay"] = wd_schedule_values[it]
 
         images, bool_masked_pos = batch
-        images = images.to(device, non_blocking=True).float()
-        # print(f"images shape is {images.shape}")
-        # canny = canny.to(device, non_blocking=True).float()
-        # print(f"canny shape is {canny.shape}")
-        bool_masked_pos = bool_masked_pos.to(device, non_blocking=True).flatten(1).to(torch.bool)
-
-        # import pdb; pdb.set_trace()
         with torch.no_grad():
-            labels = HogLayer(images)[bool_masked_pos].reshape(images.shape[0], -1, 3*nbins*(cpb**2))  # B N classes
+            labels = HogLayer(images)[bool_masked_pos.to(torch.bool)].reshape(images.shape[0], -1, 3*nbins*(cpb**2)).to(device)  # B N classes
+        
+        images = images.to(device, non_blocking=True).float()
+        bool_masked_pos = bool_masked_pos.to(device, non_blocking=True).flatten(1).to(torch.bool)
 
         with torch.cuda.amp.autocast():
             outputs = model(images, bool_masked_pos)
+            
             loss = loss_func(input=outputs, target=labels)
 
         loss_value = loss.item()

@@ -1,6 +1,6 @@
 Single GPU
-python run_mae_pretraining.py \
-        --data_path ../canny/ \
+python run_pretrain.py \
+        --data_path ../masked/train/ \
         --mask_ratio 0.75 \
         --model pretrain_mae_base_patch16_224 \
         --batch_size 20 \

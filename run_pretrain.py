@@ -117,7 +117,8 @@ def get_args():
 def get_model(chkpt_dir):
     # build model
     model = ViT(
-        num_classes=108
+        num_classes=108,
+        use_learnable_pos_emb=True
     )
     #   load checkpoint
     checkpoint_model = torch.load(chkpt_dir, map_location='cpu')['model']
@@ -157,9 +158,9 @@ def main(args):
     # random.seed(seed)
 
     cudnn.benchmark = True
-    chkpt_dir = './pretrain_mae_vit_base_mask_0.75_400e.pth'
+    chkpt_dir = '../MAE-pytorch/checkpoint.pth'
     model = get_model(chkpt_dir)
-    patch_size = model.encoder.patch_embed.patch_size
+    patch_size = model.patch_embed.patch_size
     print("Patch size = %s" % str(patch_size))
     args.window_size = (args.input_size // patch_size[0], args.input_size // patch_size[1])
     args.patch_size = patch_size
