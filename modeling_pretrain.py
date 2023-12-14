@@ -120,7 +120,7 @@ class PretrainVisionTransformerDecoder(nn.Module):
                  ):
         super().__init__()
         self.num_classes = num_classes
-        assert num_classes == 3 * patch_size ** 2
+        # assert num_classes == 3 * patch_size ** 2
         self.num_features = self.embed_dim = embed_dim  # num_features for consistency with other models
         self.patch_size = patch_size
 

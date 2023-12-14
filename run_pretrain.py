@@ -12,7 +12,9 @@ from pathlib import Path
 from timm.models import create_model
 from optim_factory import create_optimizer
 from model import ViT
-from modeling_pretrain import PretrainVisionTransformer
+from modeling_pretrain import pretrain_mae_base_patch16_224, PretrainVisionTransformer
+import torch.nn as nn
+from functools import partial
 from collections import OrderedDict
 
 
@@ -122,8 +124,19 @@ def get_model(chkpt_dir):
     #     use_learnable_pos_emb=True
     # )
     model = PretrainVisionTransformer(
-        decoder_num_classes=108
-    )
+        img_size=224,
+        patch_size=16,
+        encoder_embed_dim=384,
+        encoder_depth=12,
+        encoder_num_heads=6,
+        encoder_num_classes=0,
+        decoder_num_classes=768,
+        decoder_embed_dim=192,
+        decoder_depth=4,
+        decoder_num_heads=3,
+        mlp_ratio=4,
+        qkv_bias=True,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6))
     #   load checkpoint
     checkpoint_model = torch.load(chkpt_dir, map_location='cpu')['model']
     state_dict = model.state_dict()
