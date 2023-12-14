@@ -12,6 +12,7 @@ from pathlib import Path
 from timm.models import create_model
 from optim_factory import create_optimizer
 from model import ViT
+from modeling_pretrain import PretrainVisionTransformer
 from collections import OrderedDict
 
 
@@ -116,9 +117,12 @@ def get_args():
 
 def get_model(chkpt_dir):
     # build model
-    model = ViT(
-        num_classes=108,
-        use_learnable_pos_emb=True
+    # model = ViT(
+    #     num_classes=108,
+    #     use_learnable_pos_emb=True
+    # )
+    model = PretrainVisionTransformer(
+        decoder_num_classes=108
     )
     #   load checkpoint
     checkpoint_model = torch.load(chkpt_dir, map_location='cpu')['model']
@@ -129,15 +133,15 @@ def get_model(chkpt_dir):
             print(f"Removing key {k} from pretrained checkpoint")
             del checkpoint_model[k]
 
-    all_keys = list(checkpoint_model.keys())
-    new_dict = OrderedDict()
-    for key in all_keys:
-        if key.startswith("encoder."):
-            new_dict[key[8:]] = checkpoint_model[key]
-        else:
-            new_dict[key] = checkpoint_model[key]
-    print((new_dict.keys()))
-    state_dict.update({k: v for k, v in new_dict.items() if k in state_dict.keys()})
+    # all_keys = list(checkpoint_model.keys())
+    # new_dict = OrderedDict()
+    # for key in all_keys:
+    #     if key.startswith("encoder."):
+    #         new_dict[key[8:]] = checkpoint_model[key]
+    #     else:
+    #         new_dict[key] = checkpoint_model[key]
+    # print((new_dict.keys()))
+    state_dict.update({k: v for k, v in checkpoint_model.items() if k in state_dict.keys()})
 
     msg = model.load_state_dict(state_dict)
     print(msg)
@@ -160,7 +164,7 @@ def main(args):
     cudnn.benchmark = True
     chkpt_dir = '../MAE-pytorch/checkpoint.pth'
     model = get_model(chkpt_dir)
-    patch_size = model.patch_embed.patch_size
+    patch_size = model.encoder.patch_embed.patch_size
     print("Patch size = %s" % str(patch_size))
     args.window_size = (args.input_size // patch_size[0], args.input_size // patch_size[1])
     args.patch_size = patch_size
