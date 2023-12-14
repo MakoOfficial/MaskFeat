@@ -126,14 +126,14 @@ def get_model(chkpt_dir):
     model = PretrainVisionTransformer(
         img_size=224,
         patch_size=16,
-        encoder_embed_dim=384,
+        encoder_embed_dim=768,
         encoder_depth=12,
-        encoder_num_heads=6,
+        encoder_num_heads=12,
         encoder_num_classes=0,
         decoder_num_classes=768,
-        decoder_embed_dim=192,
+        decoder_embed_dim=384,
         decoder_depth=4,
-        decoder_num_heads=3,
+        decoder_num_heads=6,
         mlp_ratio=4,
         qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6))
